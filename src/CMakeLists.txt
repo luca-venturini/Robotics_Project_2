@@ -4,8 +4,10 @@ project(demo)
 find_package(catkin REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
+  nav_msgs
   roscpp
   tf
+  tf2_ros
 )
 
 catkin_package(
