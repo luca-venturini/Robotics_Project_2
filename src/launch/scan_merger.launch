@@ -14,8 +14,6 @@
 	</node>
 
 
-	<node pkg="tf" type="static_transform_publisher" name="base_link_to_scan" args="0.0 0.0 0.0 0.0 0.0 0.0 base_link scan 100" />
-
 	<node pkg="tf2_ros" type="static_transform_publisher" name="front" args="0.35 0.0 0.0 0.0 0.0 0.5150381 0.8571673 base_link front" />
 
 	<node pkg="tf2_ros" type="static_transform_publisher" name="rear" args="-0.35 0.0 0.0 0.0 0.0 0.866 0.5 base_link rear" />
