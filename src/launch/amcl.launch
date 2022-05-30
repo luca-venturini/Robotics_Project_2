@@ -24,7 +24,8 @@
   <!--  ************** add odom tf  ***************  -->
    <node pkg="demo" type="odom_tf" respawn="false" name="odom_tf" output="screen"/>
 
-
+  <!--  ************** add odom tf  ***************  -->
+   <node pkg="demo" type="show_path" respawn="false" name="show_path" output="screen"/>
 
 
 
