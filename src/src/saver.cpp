@@ -60,7 +60,8 @@ class MapGenerator
             return;
         poses_ = path;
         for(int i = 0; i<poses_.poses.size(); i++){
-          ROS_INFO("GOT POSES x:  %f\n", poses_.poses[i].pose.position.x);
+          poses_.poses[i].pose.position.x = poses_.poses[i].pose.position.x/map_.info.resolution + map_.info.width/2;
+          poses_.poses[i].pose.position.y = poses_.poses[i].pose.position.y/map_.info.resolution + map_.info.height/2;
         }
 
 
@@ -80,11 +81,20 @@ class MapGenerator
       for(unsigned int y = 0; y < map_.info.height; y++) {
         for(unsigned int x = 0; x < map_.info.width; x++) {
           unsigned int i = x + (map_.info.height - y - 1) * map_.info.width;
-          if (map_.data[i] >= 0 && map_.data[i] <= threshold_free_) { // [0,free)
+          bool find = false;
+          for(unsigned int k = 0; k<poses_.poses.size(); k++){
+            // ROS_INFO("Actual %f - Map %u", poses_.poses[k].pose.position.x, x);
+            if(poses_.poses[k].pose.position.x < x && poses_.poses[k].pose.position.x >= x - 1 && poses_.poses[k].pose.position.y <  (map_.info.height - y - 1) && poses_.poses[k].pose.position.y >=  (map_.info.height - y - 1) - 1){
+              fputc(184, out);
+              find = true;
+              break;
+            }
+          }
+          if (!find && map_.data[i] >= 0 && map_.data[i] <= threshold_free_) { // [0,free)
             fputc(254, out);
-          } else if (map_.data[i] >= threshold_occupied_) { // (occ,255]
+          } else if (!find &&  map_.data[i] >= threshold_occupied_) { // (occ,255]
             fputc(000, out);
-          } else { //occ [0.25,0.65]
+          } else if (!find) { //occ [0.25,0.65]
             fputc(105, out);
           }
         }
