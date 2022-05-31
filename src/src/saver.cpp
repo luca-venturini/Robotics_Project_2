@@ -38,6 +38,11 @@
 
 using namespace std;
 
+typedef struct {
+  double x;
+  double y;
+} path_point;
+
 /**
  * @brief Map generation node.
  */
@@ -56,13 +61,33 @@ class MapGenerator
     }
 
     void pathCallback(const nav_msgs::Path& path){
-        if (!saved_map_)
-            return;
-        poses_ = path;
-        for(int i = 0; i<poses_.poses.size(); i++){
-          poses_.poses[i].pose.position.x = poses_.poses[i].pose.position.x/map_.info.resolution + map_.info.width/2;
-          poses_.poses[i].pose.position.y = poses_.poses[i].pose.position.y/map_.info.resolution + map_.info.height/2;
+      if (!saved_map_)
+          return;
+      for(int i = 0; i<path.poses.size(); i++){
+        path_point p = {path.poses[i].pose.position.x/map_.info.resolution + map_.info.width/2, path.poses[i].pose.position.y/map_.info.resolution + map_.info.height/2};
+        poses_.push_back(p);
+      }
+      int size = path.poses.size()-1;
+      double m, m_x, m_y;
+      for(int i = 0; i<size; i++){
+        m_x = poses_[i+1].x - poses_[i].x > 0 ? poses_[i+1].x - poses_[i].x : poses_[i].x - poses_[i+1].x;
+        m_y = poses_[i+1].y - poses_[i].y > 0 ? poses_[i+1].y - poses_[i].y : poses_[i].y - poses_[i+1].y;
+
+        m = m_x > m_y ? m_x : m_y;
+        double inc_x = poses_[i+1].x - poses_[i].x;
+        double inc_y = poses_[i+1].y - poses_[i].y;
+        ROS_INFO("Starting point x: %f - y: %f --- end point x: %f - y: %f", poses_[i].x, poses_[i].y, poses_[i+1].x, poses_[i+1].y);
+        for(int j = 1; j<m; j++){
+          path_point p = {poses_[i].x + inc_x*j/m, poses_[i].y + inc_y*j/m};
+          ROS_INFO("Added point x: %f - y: %f", p.x, p.y);
+          poses_.push_back(p);
         }
+
+
+        ROS_INFO("X: %f - Y: %f", poses_[i].x, poses_[i].y);
+      }
+
+      
 
 
 
@@ -82,9 +107,9 @@ class MapGenerator
         for(unsigned int x = 0; x < map_.info.width; x++) {
           unsigned int i = x + (map_.info.height - y - 1) * map_.info.width;
           bool find = false;
-          for(unsigned int k = 0; k<poses_.poses.size(); k++){
+          for(unsigned int k = 0; k<poses_.size(); k++){
             // ROS_INFO("Actual %f - Map %u", poses_.poses[k].pose.position.x, x);
-            if(poses_.poses[k].pose.position.x < x && poses_.poses[k].pose.position.x >= x - 1 && poses_.poses[k].pose.position.y <  (map_.info.height - y - 1) && poses_.poses[k].pose.position.y >=  (map_.info.height - y - 1) - 1){
+            if(poses_[k].x < x && poses_[k].x >= x - 1 && poses_[k].y <  (map_.info.height - y - 1) && poses_[k].y >=  (map_.info.height - y - 1) - 1){
               fputc(184, out);
               find = true;
               break;
@@ -142,7 +167,8 @@ class MapGenerator
     std::string mapname_;
     ros::Subscriber map_sub_;
     ros::Subscriber path_sub_;
-    nav_msgs::Path poses_;
+    std::vector<path_point> poses_;
+    // nav_msgs::Path poses_;
     nav_msgs::OccupancyGrid map_;
     bool saved_map_;
     int threshold_occupied_;
