@@ -36,6 +36,7 @@
 #include "tf2/LinearMath/Matrix3x3.h"
 #include "geometry_msgs/Quaternion.h"
 #include "demo/SavePath.h"
+#include "demo/SaveMap.h"
 
 using namespace std;
 
@@ -57,14 +58,22 @@ class MapGenerator
       map_sub_ = n.subscribe("map", 1, &MapGenerator::mapCallback, this);
       path_sub_ = n.subscribe("path", 1, &MapGenerator::pathCallback, this);
       save_path_service_ = n.advertiseService<class MapGenerator, demo::SavePath::Request, demo::SavePath::Response>("save_path", &MapGenerator::savePathServiceCallback, this);
+      save_map_service_ = n.advertiseService<class MapGenerator, demo::SaveMap::Request, demo::SaveMap::Response>("save_map", &MapGenerator::saveMapServiceCallback, this);
+
     }
 
     bool savePathServiceCallback(demo::SavePath::Request &req, demo::SavePath::Response &res) {
-      saveCallback();
+      savePathCallback();
       return true;
     }
 
-    void saveCallback(){
+    bool saveMapServiceCallback(demo::SaveMap::Request &req, demo::SaveMap::Response &res) {
+      saveMapCallback();
+      return true;
+    }
+
+
+    void savePathCallback(){
       if (!got_map_ || !got_path_)
           return;
       nav_msgs::Path temp_path = path_;
@@ -157,6 +166,59 @@ class MapGenerator
         
     }
 
+    void saveMapCallback(){
+      nav_msgs::OccupancyGrid temp_map = map_;
+
+      std::string mapdatafile = mapname_ + ".pgm";
+      ROS_INFO("Writing map occupancy data to %s", mapdatafile.c_str());
+      FILE* out = fopen(mapdatafile.c_str(), "w");
+      if (!out)
+      {
+        ROS_ERROR("Couldn't save map file to %s", mapdatafile.c_str());
+        return;
+      }
+
+      fprintf(out, "P5\n# CREATOR: map_saver.cpp %.3f m/pix\n%d %d\n255\n",
+              temp_map.info.resolution, temp_map.info.width, temp_map.info.height);
+      for(unsigned int y = 0; y < temp_map.info.height; y++) {
+        for(unsigned int x = 0; x < temp_map.info.width; x++) {
+          unsigned int i = x + (temp_map.info.height - y - 1) * temp_map.info.width;
+          if (temp_map.data[i] >= 0 && temp_map.data[i] <= threshold_free_) { // [0,free)
+            fputc(254, out);
+          } else if (temp_map.data[i] >= threshold_occupied_) { // (occ,255]
+            fputc(000, out);
+          } else { //occ [0.25,0.65]
+            fputc(205, out);
+          }
+        }
+      }
+
+      fclose(out);
+
+
+      std::string mapmetadatafile = mapname_ + ".yaml";
+      ROS_INFO("Writing map occupancy data to %s", mapmetadatafile.c_str());
+      FILE* yaml = fopen(mapmetadatafile.c_str(), "w");
+
+      geometry_msgs::Quaternion orientation = temp_map.info.origin.orientation;
+      tf2::Matrix3x3 mat(tf2::Quaternion(
+        orientation.x,
+        orientation.y,
+        orientation.z,
+        orientation.w
+      ));
+      double yaw, pitch, roll;
+      mat.getEulerYPR(yaw, pitch, roll);
+
+      fprintf(yaml, "image: %s\nresolution: %f\norigin: [%f, %f, %f]\nnegate: 0\noccupied_thresh: 0.65\nfree_thresh: 0.196\n\n",
+              mapdatafile.c_str(), temp_map.info.resolution, temp_map.info.origin.position.x, temp_map.info.origin.position.y, yaw);
+
+      fclose(yaml);
+
+      ROS_INFO("Done\n");
+    }
+
+
 
     void pathCallback(const nav_msgs::Path& path){
       if (!got_map_) return;
@@ -191,6 +253,7 @@ class MapGenerator
     bool saved_;
     int poses_received;
     ros::ServiceServer save_path_service_;
+    ros::ServiceServer save_map_service_;
 
 };
 
