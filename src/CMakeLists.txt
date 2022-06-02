@@ -9,6 +9,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf2_ros
   geometry_msgs
+  message_generation
+)
+
+add_service_files(
+  FILES
+  SavePath.srv
 )
 
 generate_messages(
@@ -19,8 +25,9 @@ generate_messages(
 )
 
 catkin_package(
-  # CATKIN_DEPENDS message_runtime
+  CATKIN_DEPENDS message_runtime  
 )
+
 
 
 include_directories(
@@ -55,3 +62,5 @@ add_dependencies(saver ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TAR
 target_link_libraries(saver
   ${catkin_LIBRARIES}
 )
+
+add_dependencies(saver ${catkin_EXPORTED_TARGETS})
