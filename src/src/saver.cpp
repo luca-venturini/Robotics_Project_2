@@ -29,14 +29,14 @@
  */
 
 #include <cstdio>
-#include "ros/ros.h"
+#include "ros/ros.h"                 
 #include "ros/console.h"
 #include "nav_msgs/GetMap.h"
 #include "nav_msgs/Path.h"
-#include "tf2/LinearMath/Matrix3x3.h"
+#include "tf2/LinearMath/Matrix3x3.h"                 
 #include "geometry_msgs/Quaternion.h"
-#include "demo/SavePath.h"
-#include "demo/SaveMap.h"
+#include "p2_core/SavePath.h"                 
+#include "p2_core/SaveMap.h"
 
 using namespace std;
 
@@ -57,17 +57,17 @@ class MapGenerator
       ROS_INFO("Waiting for the map");
       map_sub_ = n.subscribe("map", 1, &MapGenerator::mapCallback, this);
       path_sub_ = n.subscribe("path", 1, &MapGenerator::pathCallback, this);
-      save_path_service_ = n.advertiseService<class MapGenerator, demo::SavePath::Request, demo::SavePath::Response>("save_path", &MapGenerator::savePathServiceCallback, this);
-      save_map_service_ = n.advertiseService<class MapGenerator, demo::SaveMap::Request, demo::SaveMap::Response>("save_map", &MapGenerator::saveMapServiceCallback, this);
+      save_path_service_ = n.advertiseService<class MapGenerator, p2_core::SavePath::Request, p2_core::SavePath::Response>("save_path", &MapGenerator::savePathServiceCallback, this);
+      save_map_service_ = n.advertiseService<class MapGenerator, p2_core::SaveMap::Request, p2_core::SaveMap::Response>("save_map", &MapGenerator::saveMapServiceCallback, this);
 
     }
 
-    bool savePathServiceCallback(demo::SavePath::Request &req, demo::SavePath::Response &res) {
+    bool savePathServiceCallback(p2_core::SavePath::Request &req, p2_core::SavePath::Response &res) {
       savePathCallback();
       return true;
     }
 
-    bool saveMapServiceCallback(demo::SaveMap::Request &req, demo::SaveMap::Response &res) {
+    bool saveMapServiceCallback(p2_core::SaveMap::Request &req, p2_core::SaveMap::Response &res) {
       saveMapCallback();
       return true;
     }

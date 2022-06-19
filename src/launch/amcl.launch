@@ -2,7 +2,7 @@
 <launch>
  
   <!-- Name of the map to use and initial position -->
-  <arg name="map_file"       default="$(find demo)/maps/mapppp3.yaml"/> 
+  <arg name="map_file"       default="$(find p2_core)/maps/mapppp3.yaml"/> 
   <arg name="initial_pose_x" default="0.0"/>
   <arg name="initial_pose_y" default="0.0"/>
   <arg name="initial_pose_a" default="0.0"/>
@@ -22,12 +22,12 @@
 
 
   <!--  ************** add odom tf  ***************  -->
-   <node pkg="demo" type="odom_tf" respawn="false" name="odom_tf" output="screen"/>
+   <node pkg="p2_core" type="odom_tf" respawn="false" name="odom_tf" output="screen"/>
 
   <!--  ************** add our nodes  ***************  -->
-   <node pkg="demo" type="show_path" respawn="false" name="show_path" output="screen"/>
+   <node pkg="p2_core" type="show_path" respawn="false" name="show_path" output="screen"/>
 
-   <node pkg="demo" type="saver" respawn="false" name="saver" output="screen"/>
+   <node pkg="p2_core" type="saver" respawn="false" name="saver" output="screen"/>
 
 
 
@@ -38,7 +38,7 @@
 
 
   <!--  ****** amcl *****  -->
-  <include file="$(find demo)/launch/amcl.launch.xml">
+  <include file="$(find p2_core)/launch/amcl.launch.xml">
     <arg name="scan_topic" value="scan_multi"/>
     <arg name="use_map_topic" value="true"/>
     <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
@@ -47,11 +47,13 @@
   </include>
 
 
-<!-- **************  scan_merger **************  -->
-  <include file="$(find demo)/launch/scan_merger.launch"/>
+  <!-- **************  scan_merger **************  -->
+  <include file="$(find p2_core)/launch/scan_merger.launch"/>
 
+  <!-- **************  rviz  **************  -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find p2_core)/config/base_config.rviz"></node>
 
   <!--  **************** Visualisation ****************  
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find demo)/rviz/robot_navigation.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find p2_core)/rviz/robot_navigation.rviz"/>
   -->
 </launch>

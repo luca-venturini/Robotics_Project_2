@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>demo</name>
+  <name>p2_core</name>
   <version>0.0.0</version>
-  <description>demo package base on easymile package</description>
+  <description>p2_core package base on easymile package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

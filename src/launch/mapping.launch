@@ -4,15 +4,15 @@
 
 
 <!--  ************** add odom tf  ***************  -->
- <node pkg="demo" type="odom_tf" respawn="false" name="odom_tf" output="screen"/>
+ <node pkg="p2_core" type="odom_tf" respawn="false" name="odom_tf" output="screen"/>
    
 
 
 <!-- **************  scan_merger **************  -->
-  <include file="$(find demo)/launch/scan_merger.launch"/>
+  <include file="$(find p2_core)/launch/scan_merger.launch"/>
   
 <!-- **************  gmapping config **************  -->  
-  <include file="$(find demo)/config/gmapping.launch.xml"/>
+  <include file="$(find p2_core)/config/gmapping.launch.xml"/>
 
 
 
