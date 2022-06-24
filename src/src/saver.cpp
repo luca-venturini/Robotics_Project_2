@@ -41,8 +41,8 @@
 using namespace std;
 
 typedef struct {
-  double x;
-  double y;
+  int x;
+  int y;
 } path_point;
 
 /**
@@ -72,6 +72,15 @@ class MapGenerator
       return true;
     }
 
+    static bool comparePoints(path_point lhs, path_point rhs){
+        return lhs.y < rhs.y || (!(rhs.y < lhs.y) && lhs.x > rhs.x);       
+    }
+
+    void printPoints(std::vector<path_point> p){
+      for (int i = 0; i<p.size(); i++)
+        ROS_INFO("index: %i ORDER X: %d - Y: %d", i, p[i].x, p[i].y);
+    }
+
 
     void savePathCallback(){
       if (!got_map_ || !got_path_)
@@ -81,7 +90,7 @@ class MapGenerator
       std::vector<path_point> poses_;      
 
       for(int i = 0; i<temp_path.poses.size(); i++){
-        path_point p = {temp_path.poses[i].pose.position.x/temp_map.info.resolution + temp_map.info.width/2, temp_path.poses[i].pose.position.y/temp_map.info.resolution + temp_map.info.height/2};
+        path_point p = {(int) (temp_path.poses[i].pose.position.x/temp_map.info.resolution + temp_map.info.width/2), (int) (temp_path.poses[i].pose.position.y/temp_map.info.resolution + temp_map.info.height/2)};
         poses_.push_back(p);
       }
       int size = temp_path.poses.size()-1;
@@ -93,21 +102,22 @@ class MapGenerator
         m = m_x > m_y ? m_x : m_y;
         double inc_x = poses_[i+1].x - poses_[i].x;
         double inc_y = poses_[i+1].y - poses_[i].y;
-        ROS_INFO("Starting point x: %f - y: %f --- end point x: %f - y: %f", poses_[i].x, poses_[i].y, poses_[i+1].x, poses_[i+1].y);
+        ROS_INFO("Starting point x: %d - y: %d --- end point x: %d - y: %d", poses_[i].x, poses_[i].y, poses_[i+1].x, poses_[i+1].y);
         for(int j = 1; j<m; j++){
-          path_point p = {poses_[i].x + inc_x*j/m, poses_[i].y + inc_y*j/m};
-          ROS_INFO("Added point x: %f - y: %f", p.x, p.y);
+          path_point p = {(int) (poses_[i].x + inc_x*j/m), (int) (poses_[i].y + inc_y*j/m)};
+          ROS_INFO("Added point x: %d - y: %d", p.x, p.y);
           poses_.push_back(p);
         }
 
 
-        ROS_INFO("X: %f - Y: %f", poses_[i].x, poses_[i].y);
+        ROS_INFO("X: %d - Y: %d", poses_[i].x, poses_[i].y);
       }
 
       
 
       std::string mapdatafile = mapname_ + ".pgm";
       ROS_INFO("Writing map occupancy data to %s", mapdatafile.c_str());
+      std::sort(poses_.begin(), poses_.end(), comparePoints);
       FILE* out = fopen(mapdatafile.c_str(), "w");
       if (!out)
       {
@@ -115,19 +125,37 @@ class MapGenerator
         return;
       }
 
-      fprintf(out, "P5\n# CREATOR: map_saver.cpp %.3f m/pix\n%d %d\n255\n",
-              temp_map.info.resolution, temp_map.info.width, temp_map.info.height);
-      for(unsigned int y = 0; y < temp_map.info.height; y++) {
-        for(unsigned int x = 0; x < temp_map.info.width; x++) {
-          unsigned int i = x + (temp_map.info.height - y - 1) * temp_map.info.width;
-          bool find = false;
-          for(unsigned int k = 0; k<poses_.size(); k++){
-            // ROS_INFO("Actual %f - Map %u", poses_.poses[k].pose.position.x, x);
-            if(poses_[k].x < x && poses_[k].x >= x - 1 && poses_[k].y <  (temp_map.info.height - y - 1) && poses_[k].y >=  (temp_map.info.height - y - 1) - 1){
-              fputc(184, out);
-              find = true;
-              break;
-            }
+      fprintf(out, "P5\n# CREATOR: map_saver.cpp %.3f m/pix\n%d %d\n255\n", temp_map.info.resolution, temp_map.info.width, temp_map.info.height);
+      printPoints(poses_);
+      bool find;
+      for(int y = 0; y < temp_map.info.height; y++) {
+        for(int x = 0; x < temp_map.info.width; x++) {
+          int i = x + (temp_map.info.height - y - 1) * temp_map.info.width;
+          // ROS_INFO("Point x: %d, y: %d", x, y);
+          find = false;
+            // for(unsigned int k = 0; k<poses_.size(); k++){
+            //   // ROS_INFO("Actual %f - Map %u", poses_.poses[k].pose.position.x, x);
+            //   if(poses_[k].x == x && poses_[k].y == (temp_map.info.height - y - 1) - 1){
+            //     fputc(184, out);
+            //     find = true;
+            //     std::swap(poses_[k], poses_.back());
+            //     poses_.pop_back();
+            //     ROS_INFO("k==%d, POINT_X: %d, Y: %d,  --Match found XXXXXXXX", k, poses_[k].x, poses_[k].y);
+            //     break;
+            //   }
+            // }
+          if(poses_.back().x == x && poses_.back().y == (temp_map.info.height - y - 1)){
+             fputc(184, out);
+             find = true;
+             while(poses_.back().x == x && poses_.back().y == (temp_map.info.height - y - 1))
+              poses_.pop_back();
+
+             ROS_INFO("Match found XXXXXXXX %d", (int)poses_.size());
+            //  for (int pp = 0; pp<poses_.size(); pp++){
+            //   ROS_INFO("---index: %d ORDER X: %d - Y: %d", pp, poses_[pp].x, poses_[pp].y);
+            // }
+            ROS_INFO("Actual point x: %d, y: %d", x, (temp_map.info.height - y - 1));
+
           }
           if (!find && temp_map.data[i] >= 0 && temp_map.data[i] <= threshold_free_) { // [0,free)
             fputc(254, out);
@@ -143,7 +171,7 @@ class MapGenerator
 
 
       std::string mapmetadatafile = mapname_ + ".yaml";
-      ROS_INFO("Writing map occupancy data to %s", mapmetadatafile.c_str());
+      ROS_INFO("Writing map occupancyK data to %s", mapmetadatafile.c_str());
       FILE* yaml = fopen(mapmetadatafile.c_str(), "w");
 
       geometry_msgs::Quaternion orientation = temp_map.info.origin.orientation;
@@ -262,7 +290,7 @@ class MapGenerator
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "saver");
-  std::string mapname = "map";
+  std::string mapname = "mappaa";
   int threshold_occupied = 65;
   int threshold_free = 25;
 
