@@ -63,11 +63,15 @@ class MapGenerator
     }
 
     bool savePathServiceCallback(p2_core::SavePath::Request &req, p2_core::SavePath::Response &res) {
+      res.old_path_name = mapname_;
+      mapname_ = req.new_path_name;
       savePathCallback();
       return true;
     }
 
     bool saveMapServiceCallback(p2_core::SaveMap::Request &req, p2_core::SaveMap::Response &res) {
+      res.old_map_name = mapname_;
+      mapname_ = req.new_map_name;
       saveMapCallback();
       return true;
     }
@@ -87,37 +91,37 @@ class MapGenerator
           return;
       nav_msgs::Path temp_path = path_;
       nav_msgs::OccupancyGrid temp_map = map_;
-      std::vector<path_point> poses_;      
+      std::vector<path_point> list_poses;      
 
       for(int i = 0; i<temp_path.poses.size(); i++){
         path_point p = {(int) (temp_path.poses[i].pose.position.x/temp_map.info.resolution + temp_map.info.width/2), (int) (temp_path.poses[i].pose.position.y/temp_map.info.resolution + temp_map.info.height/2)};
-        poses_.push_back(p);
+        list_poses.push_back(p);
       }
       int size = temp_path.poses.size()-1;
       double m, m_x, m_y;
       for(int i = 0; i<size; i++){
-        m_x = poses_[i+1].x - poses_[i].x > 0 ? poses_[i+1].x - poses_[i].x : poses_[i].x - poses_[i+1].x;
-        m_y = poses_[i+1].y - poses_[i].y > 0 ? poses_[i+1].y - poses_[i].y : poses_[i].y - poses_[i+1].y;
+        m_x = list_poses[i+1].x - list_poses[i].x > 0 ? list_poses[i+1].x - list_poses[i].x : list_poses[i].x - list_poses[i+1].x;
+        m_y = list_poses[i+1].y - list_poses[i].y > 0 ? list_poses[i+1].y - list_poses[i].y : list_poses[i].y - list_poses[i+1].y;
 
         m = m_x > m_y ? m_x : m_y;
-        double inc_x = poses_[i+1].x - poses_[i].x;
-        double inc_y = poses_[i+1].y - poses_[i].y;
-        ROS_INFO("Starting point x: %d - y: %d --- end point x: %d - y: %d", poses_[i].x, poses_[i].y, poses_[i+1].x, poses_[i+1].y);
+        double inc_x = list_poses[i+1].x - list_poses[i].x;
+        double inc_y = list_poses[i+1].y - list_poses[i].y;
+        ROS_INFO("Starting point x: %d - y: %d --- end point x: %d - y: %d", list_poses[i].x, list_poses[i].y, list_poses[i+1].x, list_poses[i+1].y);
         for(int j = 1; j<m; j++){
-          path_point p = {(int) (poses_[i].x + inc_x*j/m), (int) (poses_[i].y + inc_y*j/m)};
+          path_point p = {(int) (list_poses[i].x + inc_x*j/m), (int) (list_poses[i].y + inc_y*j/m)};
           ROS_INFO("Added point x: %d - y: %d", p.x, p.y);
-          poses_.push_back(p);
+          list_poses.push_back(p);
         }
 
 
-        ROS_INFO("X: %d - Y: %d", poses_[i].x, poses_[i].y);
+        ROS_INFO("X: %d - Y: %d", list_poses[i].x, list_poses[i].y);
       }
 
       
 
       std::string mapdatafile = mapname_ + ".pgm";
       ROS_INFO("Writing map occupancy data to %s", mapdatafile.c_str());
-      std::sort(poses_.begin(), poses_.end(), comparePoints);
+      std::sort(list_poses.begin(), list_poses.end(), comparePoints);
       FILE* out = fopen(mapdatafile.c_str(), "w");
       if (!out)
       {
@@ -126,35 +130,35 @@ class MapGenerator
       }
 
       fprintf(out, "P5\n# CREATOR: map_saver.cpp %.3f m/pix\n%d %d\n255\n", temp_map.info.resolution, temp_map.info.width, temp_map.info.height);
-      printPoints(poses_);
+      //printPoints(list_poses);
       bool find;
       for(int y = 0; y < temp_map.info.height; y++) {
         for(int x = 0; x < temp_map.info.width; x++) {
           int i = x + (temp_map.info.height - y - 1) * temp_map.info.width;
           // ROS_INFO("Point x: %d, y: %d", x, y);
           find = false;
-            // for(unsigned int k = 0; k<poses_.size(); k++){
-            //   // ROS_INFO("Actual %f - Map %u", poses_.poses[k].pose.position.x, x);
-            //   if(poses_[k].x == x && poses_[k].y == (temp_map.info.height - y - 1) - 1){
+            // for(unsigned int k = 0; k<list_poses.size(); k++){
+            //   // ROS_INFO("Actual %f - Map %u", list_poses.poses[k].pose.position.x, x);
+            //   if(list_poses[k].x == x && list_poses[k].y == (temp_map.info.height - y - 1) - 1){
             //     fputc(184, out);
             //     find = true;
-            //     std::swap(poses_[k], poses_.back());
-            //     poses_.pop_back();
-            //     ROS_INFO("k==%d, POINT_X: %d, Y: %d,  --Match found XXXXXXXX", k, poses_[k].x, poses_[k].y);
+            //     std::swap(list_poses[k], list_poses.back());
+            //     list_poses.pop_back();
+            //     ROS_INFO("k==%d, POINT_X: %d, Y: %d,  --Match found XXXXXXXX", k, list_poses[k].x, list_poses[k].y);
             //     break;
             //   }
             // }
-          if(poses_.back().x == x && poses_.back().y == (temp_map.info.height - y - 1)){
-             fputc(184, out);
+          if(list_poses.back().x == x && list_poses.back().y == (temp_map.info.height - y - 1)){
+             fputc(104, out);
              find = true;
-             while(poses_.back().x == x && poses_.back().y == (temp_map.info.height - y - 1))
-              poses_.pop_back();
+             while(list_poses.back().x == x && list_poses.back().y == (temp_map.info.height - y - 1))
+              list_poses.pop_back();
 
-             ROS_INFO("Match found XXXXXXXX %d", (int)poses_.size());
-            //  for (int pp = 0; pp<poses_.size(); pp++){
-            //   ROS_INFO("---index: %d ORDER X: %d - Y: %d", pp, poses_[pp].x, poses_[pp].y);
+             //ROS_INFO("Match found XXXXXXXX %d", (int)list_poses.size());
+            //  for (int pp = 0; pp<list_poses.size(); pp++){
+            //   ROS_INFO("---index: %d ORDER X: %d - Y: %d", pp, list_poses[pp].x, list_poses[pp].y);
             // }
-            ROS_INFO("Actual point x: %d, y: %d", x, (temp_map.info.height - y - 1));
+            //ROS_INFO("Actual point x: %d, y: %d", x, (temp_map.info.height - y - 1));
 
           }
           if (!find && temp_map.data[i] >= 0 && temp_map.data[i] <= threshold_free_) { // [0,free)
@@ -162,7 +166,7 @@ class MapGenerator
           } else if (!find &&  temp_map.data[i] >= threshold_occupied_) { // (occ,255]
             fputc(000, out);
           } else if (!find) { //occ [0.25,0.65]
-            fputc(105, out);
+            fputc(205, out);
           }
         }
       }

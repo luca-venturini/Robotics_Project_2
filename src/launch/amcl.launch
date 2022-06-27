@@ -27,7 +27,7 @@
   <!--  ************** add our nodes  ***************  -->
    <node pkg="p2_core" type="show_path" respawn="false" name="show_path" output="screen"/>
 
-   <node pkg="p2_core" type="saver" respawn="false" name="saver" output="screen" cwd="node"/>
+   <node pkg="p2_core" type="saver" respawn="false" name="saver" output="screen"/>
 
 
 

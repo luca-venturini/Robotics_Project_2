@@ -6,6 +6,8 @@
 <!--  ************** add odom tf  ***************  -->
  <node pkg="p2_core" type="odom_tf" respawn="false" name="odom_tf" output="screen"/>
    
+<!-- save map -->
+ <node pkg="p2_core" type="saver" respawn="false" name="saver" output="screen"/>
 
 
 <!-- **************  scan_merger **************  -->
@@ -13,6 +15,10 @@
   
 <!-- **************  gmapping config **************  -->  
   <include file="$(find p2_core)/config/gmapping.launch.xml"/>
+
+<!--  rviz -->
+
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(find p2_core)/config/mapping_config.rviz"></node>
 
 
 
