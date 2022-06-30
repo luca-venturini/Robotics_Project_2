@@ -20,7 +20,7 @@ add_service_files(
 
 generate_messages(
    DEPENDENCIES
-   std_msgs  # Or other packages containing msgs
+   std_msgs
    geometry_msgs
    nav_msgs
 )
@@ -64,4 +64,4 @@ target_link_libraries(saver
   ${catkin_LIBRARIES}
 )
 
-add_dependencies(saver ${catkin_EXPORTED_TARGETS})
+# add_dependencies(saver ${catkin_EXPORTED_TARGETS})

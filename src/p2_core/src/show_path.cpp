@@ -6,13 +6,17 @@
 class ShowPath
 {
 public:
+
+  /*
+  We use this class to get poses and add them to our path, that will be then published, in order to build the trajectory
+  */
   ShowPath() {
     pub = n.advertise<nav_msgs::Path>("path", 1000);
     sub = n.subscribe("/amcl_pose", 1000, &ShowPath::callback, this);
   }
 
   void callback(const geometry_msgs::PoseWithCovarianceStamped& msg){
-    path.header.stamp = ros::Time::now();
+    path.header.stamp = msg.header.stamp;
     path.header.frame_id = "map";
     geometry_msgs::PoseStamped pose_stamped;
     pose_stamped.header = msg.header;

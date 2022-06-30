@@ -2,7 +2,7 @@
 <launch>
  
   <!-- Name of the map to use and initial position -->
-  <arg name="map_file"       default="$(find p2_core)/maps/mapppp3.yaml"/> 
+  <arg name="map_file"       default="$(find p2_core)/maps/map_gmapping.yaml"/> 
   <arg name="initial_pose_x" default="0.0"/>
   <arg name="initial_pose_y" default="0.0"/>
   <arg name="initial_pose_a" default="0.0"/>
@@ -10,15 +10,6 @@
   <arg name="global_frame_id" default="map"/>
 
   <param name="/use_sim_time" value="true"/>
-
-
- <!--  ***************** Robot simulation ***************** 
-  <node pkg="stage_ros" type="stageros" name="stageros" args="$(arg world_file)">
-    <param name="base_watchdog_timeout" value="0.5"/>
-    <remap from="base_scan" to="scan"/>
-  </node>
-
- -->
 
 
   <!--  ************** add odom tf  ***************  -->
@@ -38,7 +29,7 @@
 
 
   <!--  ****** amcl *****  -->
-  <include file="$(find p2_core)/launch/amcl.launch.xml">
+  <include file="$(find p2_core)/config/amcl.launch.xml">
     <arg name="scan_topic" value="scan_multi"/>
     <arg name="use_map_topic" value="true"/>
     <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
@@ -53,7 +44,4 @@
   <!-- **************  rviz  **************  -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find p2_core)/config/base_config.rviz"></node>
 
-  <!--  **************** Visualisation ****************  
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find p2_core)/rviz/robot_navigation.rviz"/>
-  -->
 </launch>
