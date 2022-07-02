@@ -33,7 +33,7 @@ The localization can be started using the launchfile ```amcl.launch```, with the
 
 # Services
 
-## The two services can be used to save the map and the trajectory, the images will be saved in the .ros folder
+#### The two services can be used to save the map and the trajectory, the images will be saved in the .ros folder
 
 In order to save the map, without the trajectory, it is possibile to call the service:
 ```
