@@ -19,7 +19,7 @@ We have used the first bag to create the map, the others two to do the localizat
 
 Gmapping has been used for map creation.
 
-The images of the created map and trajectories can be found in the  ```imgs ``` folder
+The images of the created map and trajectories can be found in the  ```imgs``` folder
 
 # How to start
 
