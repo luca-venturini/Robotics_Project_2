@@ -29,7 +29,7 @@ rosservice call /save_path image_name
 # Useful Info
 We have decided to create the map using Gmapping, we have tried setting different parameters, chinging the number of particles, the ranges,...
 In order to merge the two lasers we have used ira_laser_tools, which provide the functionality of merging the values of multiple scanners.
-Finally for the localization we have used the amcl package, setting the parameter ```odom_model_type``` as ```omni-corrected``` and consequantly the alphas values, to get a reasonable trajectory.
+Finally for the localization we have used the amcl package, setting the parameter ```odom_model_type``` as ```omni-corrected``` and consequently the alphas values, to get a reasonable trajectory.
 
 We have decided to exploit part of the code of map_saver to generate an image of the map and to draw also the trajectory of the robot.
 In particular the trajectory is built reading the values from the message containing the path information. Once the service is called a linear interpolation between the points is done, in order to have a smooth trajecotry, since the message containing the path has not all the points but just some "samples" retreived from time to time.
