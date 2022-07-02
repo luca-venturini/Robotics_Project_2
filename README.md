@@ -1,5 +1,3 @@
-# Robotics_Project_2
-
 # Team Members
 - 10623973 Matteo Fabris
 - 10571388 Samuele Portanti
@@ -12,9 +10,30 @@ The "src" folder contains the p2_core folder with 3 nodes:
 - The third node, saver, is used to save th emap and the trajectory, we have taken the code from the github page of mapsaver, and then we have applied some customization to it, in order to save the trajectory and the map calling services.
 
 
+# TF Tree
+![tf tree composed of: map -> odom -> base_link -> laser_front and laser_rear](imgs/tf_tree.png "tf tree")
+
+# Used bags
+
+We have used the first bag to create the map, the others two to do the localization.
+
+Gmapping has been used for map creation.
+
+# How to start
+
+The mapping can be started using the launchfile ```mapping.launch```, with the command:
+
+```roslaunch p2_core mapping.launch ```
+
+The localization can be started using the launchfile ```amcl.launch```, with the command:
+
+```roslaunch p2_core amcl```
+
+
+
 # Services
 
-##The two services can be used to save the map and the trajectory, the images will be saved in the .ros folder
+## The two services can be used to save the map and the trajectory, the images will be saved in the .ros folder
 
 In order to save the map, without the trajectory, it is possibile to call the service:
 ```
