@@ -27,7 +27,7 @@ The mapping can be started using the launchfile ```mapping.launch```, with the c
 
 The localization can be started using the launchfile ```amcl.launch```, with the command:
 
-```roslaunch p2_core amcl```
+```roslaunch p2_core amcl.launch```
 
 
 
